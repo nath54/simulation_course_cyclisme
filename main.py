@@ -31,10 +31,10 @@ ibouches=[]
 icheveux=[]
 ibarbes=[]
 for x in range(12): itete.append( "tete"+str(x+1)+".png" )
-for x in range(5): iyeux.append( "yeux"+str(x+1)+".png" )
+for x in range(12): iyeux.append( "yeux"+str(x+1)+".png" )
 for x in range(3): inez.append( "nez"+str(x+1)+".png" )
 for x in range(3): ibouches.append( "bouche"+str(x+1)+".png" )
-for x in range(14): icheveux.append( "cheveux"+str(x+1)+".png" )
+for x in range(23): icheveux.append( "cheveux"+str(x+1)+".png" )
 for x in range(25): ibarbes.append( "barbe"+str(x+1)+".png" )
 
 
@@ -42,7 +42,7 @@ tym=ry(150)
 timg=rx(100)
 max_endurance=500000
 
-im_m_jaune=pygame.transform.scale( pygame.image.load(dim+"m_jaune.png"), [timg,timg] )
+img_m_jaune=pygame.transform.scale( pygame.image.load(dim+"m_jaune.png"), [timg,timg] )
 
 voy=["a","e","y","u","i","o"]
 con=["z","r","t","p","q","s","d","f","g","h","j","k","l","m","w","x","c","v","b","n"]
@@ -64,7 +64,7 @@ def crea_mape():
     e=10000
     mape=[[0,e,"plat"]]
     dc="plat"
-    for x in range(random.randint(400,1000)):
+    for x in range(random.randint(500,1000)):
         tps=["descente","plat","montee"]
         f=random.randint(10,1000)
         dc=random.choice(tps)
@@ -109,7 +109,7 @@ class Perso:
         self.vitesse_max=rr(25,65)
         self.vitesse_max_montee=rr(40,90)*self.vitesse_max/100
         self.vitesse_max_descente=rr(110,150)*self.vitesse_max/100
-        self.acc=rr(1,100)/100.
+        self.acc=rr(10,100)/100.
         self.acc_montee=rr(40,90)*self.acc/100.
         self.acc_descente=rr(110,150)*self.acc/100.
         self.tmesprint=random.randint(30,120)
@@ -199,6 +199,7 @@ class Perso:
                 self.px+=100000-(len(finis)*300)
                 self.vitesse_actuelle=0
                 finis.append(self)
+                self.issprint=False
         return finis
 
 tp_classes=["bronze"  ,"argent"     ,"or"       ,"platine"  ,"diamant"]
@@ -257,8 +258,8 @@ def aff(eqs,mape,menu,fps,pause,sel,classement):
             if p.issprint: fenetre.blit( font2.render("sprint",True,(255,55,155)) , [xx+rx(355),yy+ry(5)] )
             if p.fini:
                 fenetre.blit( font2.render("fini",True,(255,250,50)) , [xx+rx(355),yy+ry(25)] )
-                if x>0: fenetre.blit( font2.render("-"+str(classement[0].t_end-p.t_end)[:5]+" sec",True,(250,250,250)) , [xx+rx(405),yy+ry(25)] )    
-            if p.is_m_jaune: fenetre.blit( img_m_jaune , [xx+rx(220),yy] )
+                if x>0: fenetre.blit( font2.render(str(classement[0].t_end-p.t_end)[:5]+" sec",True,(250,250,250)) , [xx+rx(405),yy+ry(25)] )    
+            if p.is_m_jaune: fenetre.blit( img_m_jaune , [xx+tex-rx(160)),yy] )
             yy+=ty
             if x==4:
                 xx+=tex/2
@@ -318,10 +319,13 @@ def main_etape(eqs):
     for e in eqs:
         for p in e.persos:
             p.px=0
-            p.endurance+=p.endurance_tot/4
+            p.vitesse_actuelle=0
+            p.endurance+=p.endurance_tot/20
             if p.endurance>p.endurance_tot: p.endurance=p.endurance_tot
             p.issprint=False
             p.t_begin=time.time()
+            p.t_end=0
+            p.fini=False
     while encour:
         t1=time.time()
         for e in eqs:
@@ -334,7 +338,7 @@ def main_etape(eqs):
             for p in e.persos:
                 prs.append(p)
                 if p.fini: nbfini+=1
-        if nbfini>=len(prs)-1: encour=False
+        if nbfini>=len(prs): encour=False
         classement=sorted(prs, key=lambda p: p.px, reverse=True) 
         bts=aff(eqs,mape,menu,fps,pause,sel,classement)
         for event in pygame.event.get():
@@ -369,19 +373,20 @@ def main_etape(eqs):
 
 def main():
     eqs=[]
-    for x in range(15): eqs.append( Equipe() )
+    for x in range(1): eqs.append( Equipe() )
     for e in eqs:
-        for x in range(15):
+        for x in range(10):
             e.persos.append( Perso(e) )
     for x in range(10):
+        print("etape ",x)
         main_etape(eqs)
         prs=[]
         for e in eqs:
             for p in e.persos:
-                p.tps_tour_total+=t_end-t_begin
+                p.tps_tour_total+=p.t_end-p.t_begin
                 p.is_m_jaune=False
                 prs.append(p)
-        classement=sorted(prs, key=lambda p: p.tps_tour_total, reverse=True) 
+        classement=sorted(prs, key=lambda p: p.tps_tour_total, reverse=False) 
         classement[0].is_m_jaune=True
         
 
