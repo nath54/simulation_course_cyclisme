@@ -259,7 +259,7 @@ def aff(eqs,mape,menu,fps,pause,sel,classement):
             if p.fini:
                 fenetre.blit( font2.render("fini",True,(255,250,50)) , [xx+rx(355),yy+ry(25)] )
                 if x>0: fenetre.blit( font2.render(str(classement[0].t_end-p.t_end)[:5]+" sec",True,(250,250,250)) , [xx+rx(405),yy+ry(25)] )    
-            if p.is_m_jaune: fenetre.blit( img_m_jaune , [xx+tex-rx(160)),yy] )
+            if p.is_m_jaune: fenetre.blit( img_m_jaune , [xx+tex-rx(160),yy] )
             yy+=ty
             if x==4:
                 xx+=tex/2
