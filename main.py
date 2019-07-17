@@ -231,7 +231,9 @@ def aff(eqs,mape,menu,fps,pause,sel,classement):
                 if not p.fini:
                     t=ry(5)
                     if sel==p: t=ry(10)
-                    p.rect=pygame.draw.circle(fenetre,e.cl1,(xx+int(p.px/ttx*tx),yy+p.py),t,0)
+                    cl=e.cl1
+                    if p.is_m_jaune: cl=(255,255,0)
+                    p.rect=pygame.draw.circle(fenetre,cl,(xx+int(p.px/ttx*tx),yy+p.py),t,0)
                     pygame.draw.circle(fenetre,(0,0,0),(xx+int(p.px/ttx*tx),yy+p.py),t,1)
         xx,yy=rx(100),ry(250)
         for x in range(len(pts)-2):
@@ -253,7 +255,10 @@ def aff(eqs,mape,menu,fps,pause,sel,classement):
             fenetre.blit( font2.render(p.equipe.nom,True,p.equipe.cl1) , [xx+rx(205),yy+ry(25)] )
             fenetre.blit( font4.render(str(x+1),True,(255,255,255)) , [xx+tx-rx(30),yy+ry(15)] )
             if p.issprint: fenetre.blit( font2.render("sprint",True,(255,55,155)) , [xx+rx(355),yy+ry(5)] )
-            if p.fini: fenetre.blit( font2.render("fini",True,(255,250,50)) , [xx+rx(355),yy+ry(25)] )  
+            if p.fini:
+                fenetre.blit( font2.render("fini",True,(255,250,50)) , [xx+rx(355),yy+ry(25)] )
+                if x>0: fenetre.blit( font2.render("-"+str(classement[0].t_end-p.t_end)[:5]+" sec",True,(250,250,250)) , [xx+rx(405),yy+ry(25)] )    
+            if p.is_m_jaune: fenetre.blit( img_m_jaune , [xx+rx(220),yy] )
             yy+=ty
             if x==4:
                 xx+=tex/2
