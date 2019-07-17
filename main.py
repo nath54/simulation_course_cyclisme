@@ -60,7 +60,9 @@ def crea_nom():
         if x==0: nom+=" "
     return nom
 
-def crea_mape():
+daps=["ville","village"]
+
+def crea_mape(depart):
     e=10000
     mape=[[0,e,"plat"]]
     dc="plat"
@@ -70,7 +72,12 @@ def crea_mape():
         dc=random.choice(tps)
         mape.append( [e,e+f,dc] )
         e+=f
-    return mape
+    if depart==None:
+        depart=random.choice(daps)+" "+crea_nom().split()[0]
+        if random.randint(1,5)==1: depart+=" de "+crea_nom().split()[0]
+    arrivee=random.choice(daps)+" "+crea_nom().split()[0]
+    if random.randint(1,5)==1: arrivee+=" de "+crea_nom().split()[0]
+    return mape,depart,arrivee
 
 def rtn_note(perso):
     note=0
@@ -308,8 +315,7 @@ def aff(eqs,mape,menu,fps,pause,sel,classement):
     return bts
 
 
-def main_etape(eqs):
-    mape=crea_mape()
+def main_etape(eqs,mape):
     menu=0
     pause=False
     sel=None
@@ -368,8 +374,84 @@ def main_etape(eqs):
         tt=t2-t1
         if tt!=0: fps=int(1./tt)
     
-    
-    
+def aff_m(eqs,mape,depart,arrivee,classement,eqsel,pp):    
+    fenetre.fill((150,150,150))
+    ttx=mape[len(mape)-1][1]
+    pts=[]
+    p=0.
+    for m in mape:
+        pts.append([m[0],p])
+        if m[2]=="plat": c=0
+        elif m[2]=="descente": c=-0.005
+        else: c=0.005
+        p+=c*(m[1]-m[0])
+        pts.append([m[1],p])
+    xx,yy=0,ry(100)
+    tx,ty=tex,ry(100)
+    btn=pygame.draw.rect(fenetre,(255,255,255),(xx,yy-ty,tx,ty*2),0)
+    for x in range(len(pts)-2):
+        p1=pts[x]
+        p2=pts[x+1]
+        pygame.draw.line(fenetre,(20,20,20),(xx+int(p1[0]/ttx*tx),yy+p1[1]),(xx+int(p2[0]/ttx*tx),yy+p2[1]),2)
+    fenetre.blit( font3.render("départ : "+depart+" - arrivée : "+arrivee,True,(0,0,0)) , [rx(50),ry(175)] )
+    btn=pygame.draw.rect(fenetre,(200,200,20),(rx(400),ry(205),rx(200),ry(50)),0)
+    fenetre.blit( font3.render("simuler",True,(0,0,0)) , [rx(420),ry(215)] )
+    if eqsel==None: txt,cl="Toutes les equipes",(20,20,20)
+    else: txt,cl=eqsel.nom,eqsel.cl1
+    fenetre.blit(font4.render(txt,True,cl) , [rx(400),ry(260)] )
+    xx,yy,tx,ty=rx(0),ry(300),tex,tey-ry(300)
+    pygame.draw.rect(fenetre,(70,50,10),(xx,yy,tx,ty),0)
+    tcy=ry(100)
+    nb=0
+    for x in range(pp,pp+int(ty/tcy)):        
+        if x >= 0 and x<len(classement)-1:
+            p=classement[x]
+            if eqsel==None or p.equipe==eqsel:
+                fenetre.blit( p.img , [xx,yy+tcy*nb] )
+                fenetre.blit( font2.render( p.nom , True , (255,255,255)) , [xx+rx(105),yy+tcy*nb+ry(5)] )
+                fenetre.blit( font2.render( p.classe , True , cl_classes[tp_classes.index(p.classe)]) , [xx+rx(105),yy+tcy*nb+ry(25)] )
+                fenetre.blit( font2.render( p.pays , True , (255,255,255)) , [xx+rx(255),yy+tcy*nb+ry(5)] )
+                fenetre.blit( font2.render( p.equipe.nom , True , p.equipe.cl1) , [xx+rx(255),yy+tcy*nb+ry(25)] )
+                txt=str(classement.index(p)+1)
+                if txt=="1": txt+="er"
+                elif txt=="2": txt+="nd"
+                else: txt+="eme"
+                fenetre.blit( font2.render( txt , True , (255,255,255)) , [xx+rx(405),yy+tcy*nb+ry(5)] )
+                fenetre.blit( font2.render( str(classement[0].tps_tour_total-p.tps_tour_total)[:5]+" sec du 1er" , True , (255,255,255)) , [xx+rx(405),yy+tcy*nb+ry(25)] )
+                pygame.draw.rect(fenetre,(0,0,0),(xx,yy+tcy*nb,tx,tcy),2)
+                nb+=1
+    pygame.display.update()
+    return btn
+
+def menu_entre_course(eqs,mape,depart,arrivee,classement):
+    eqsel=None
+    pp=0
+    encour=True
+    while encour:
+        btn=aff_m(eqs,mape,depart,arrivee,classement,eqsel,pp)
+        for event in pygame.event.get():
+            if event.type==QUIT: exit()
+            elif event.type==KEYDOWN:
+                if event.key==K_ESCAPE: exit()
+                elif event.key==K_UP and pp>0: pp-=1
+                elif event.key==K_DOWN and pp<len(classement): pp+=1
+                elif event.key==K_LEFT:
+                    if eqsel==None: eqsel=eqs[-1]
+                    else:
+                        i=eqs.index(eqsel)
+                        if i==0: eqsel=None
+                        else: eqsel=eqs[i-1]
+                elif event.key==K_RIGHT:
+                    if eqsel==None: eqsel=eqs[0]
+                    else:
+                        i=eqs.index(eqsel)
+                        if i==len(eqs)-1: eqsel=None
+                        else: eqsel=eqs[i+1]
+            elif event.type==MOUSEBUTTONUP:
+                pos=pygame.mouse.get_pos()
+                if btn.collidepoint(pos):
+                    encour=False
+                
 
 def main():
     eqs=[]
@@ -377,9 +459,18 @@ def main():
     for e in eqs:
         for x in range(15):
             e.persos.append( Perso(e) )
+    depart=None
     for x in range(10):
-        print("etape ",x)
-        main_etape(eqs)
+        prs=[]
+        for e in eqs:
+            for p in e.persos:
+                p.tps_tour_total+=p.t_end-p.t_begin
+                p.is_m_jaune=False
+                prs.append(p)
+        classement=sorted(prs, key=lambda p: p.tps_tour_total, reverse=False) 
+        mape,depart,arrivee=crea_mape(depart)
+        menu_entre_course(eqs,mape,depart,arrivee,classement)
+        main_etape(eqs,mape)
         prs=[]
         for e in eqs:
             for p in e.persos:
@@ -388,6 +479,7 @@ def main():
                 prs.append(p)
         classement=sorted(prs, key=lambda p: p.tps_tour_total, reverse=False) 
         classement[0].is_m_jaune=True
+        depart=arrivee
         
 
 
