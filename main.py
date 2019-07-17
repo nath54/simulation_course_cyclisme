@@ -373,9 +373,9 @@ def main_etape(eqs):
 
 def main():
     eqs=[]
-    for x in range(1): eqs.append( Equipe() )
+    for x in range(15): eqs.append( Equipe() )
     for e in eqs:
-        for x in range(10):
+        for x in range(15):
             e.persos.append( Perso(e) )
     for x in range(10):
         print("etape ",x)
